@@ -1,6 +1,8 @@
 var mongoose = require("mongoose");
+const { configDotenv } = require('dotenv');
+configDotenv();
 
-mongoose.connect("mongodb+srv://pujuagarwal5263:7590863884@cluster0.ca58dmt.mongodb.net/harmonygiver?retryWrites=true&w=majority").then(() => {
+mongoose.connect(process.env.MONGODB_URL).then(() => {
     console.log("Database Connected Successfully");
 }).catch((err) => {
     console.log("No Connection to Database");

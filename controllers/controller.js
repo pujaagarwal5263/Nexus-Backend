@@ -1,6 +1,8 @@
 let token;
 const {NylasCongif} =require("../nylas-config");
 const { default: Draft } = require('nylas/lib/models/draft');
+const User = require("../modules/userSchema");
+const cron = require('node-cron');
 
 const labelMap = {
   "Inbox": "inbox",
@@ -94,8 +96,128 @@ const readInbox = async(req,res) => {
   }
 }
 
+const starEmail = async(req,res) => {
+  // post email's subject, id, recepient_array, snippet to mongo DB mapped with user's email
+  const userEmail = req.body.email;
+  const starredEmail = req.body.starredEmail;
+  try {
+    // Check if the user already exists
+    let user = await User.findOne({ email: userEmail });
+
+    if (!user) {
+      // Create a new user if not found
+      user = new User({
+        email: userEmail,
+        starredEmails: [starredEmail],
+      });
+    } else {
+      // Update existing user's starredEmails array
+      user.starredEmails.push(starredEmail[0]);
+    }
+
+    // Save the user (either newly created or updated)
+    const savedUser = await user.save();
+    return res.status(200).json(savedUser);
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ error: 'Error saving starred email.' });
+  }
+}
+
+const getStarredMail = async(req,res) =>{
+  // take user's mail id in body and send corresponding starred email from mongo DB
+  const userEmail = req.body.email;
+
+  try {
+    // Find the user by email and retrieve their starredEmails
+    const user = await User.findOne({ email: userEmail });
+
+    if (user) {
+      const starredEmails = user.starredEmails;
+      return res.status(200).json(starredEmails);
+    } else {
+      return res.status(404).json({ error: 'User not found.' });
+    }
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ error: 'Error fetching starred emails.' });
+  }
+}
+
+const scheduleMail = async(req,res) => {
+  const userEmail = req.body.email;
+  const scheduledEmail = req.body.scheduledEmail;
+  try {
+    // Check if the user already exists
+    let user = await User.findOne({ email: userEmail });
+
+    if (!user) {
+      // Create a new user if not found
+      user = new User({
+        email: userEmail,
+        scheduledEmails: [scheduledEmail],
+      });
+    } else {
+      // Update existing user's starredEmails array
+      user.scheduledEmails.push(scheduledEmail[0]);
+    }
+
+    // Save the user (either newly created or updated)
+    const savedUser = await user.save();
+
+    // deploy cron job to send mail at specified time
+    const schedulingTime =  scheduledEmail[0].scheduledAt;
+    cron.schedule(schedulingTime, async () => {
+      try {
+        token = "t4qLPsX1c2KMCXpGMP3Qe6BVce0xBx";
+        const nylas = NylasCongif.with(token);
+
+        const draft = new Draft(nylas, {
+          subject: scheduledEmail[0].subject,
+          body: scheduledEmail[0].body,
+          to: scheduledEmail[0].recipient_array
+        });
+        await draft.send();
+
+        console.log('Scheduled email sent:', scheduledEmail);
+      } catch (error) {
+        console.error('Error sending scheduled email:', error);
+      }
+    });
+
+    return res.status(200).json(savedUser);
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ error: 'Error scheduling email.' });
+  }
+}
+
+const getScheduledMail = async(req,res) =>{
+  // take user's mail id in body and send corresponding starred email from mongo DB
+  const userEmail = req.body.email;
+
+  try {
+    // Find the user by email and retrieve their starredEmails
+    const user = await User.findOne({ email: userEmail });
+
+    if (user) {
+      const scheduledEmails = user.scheduledEmails;
+      return res.status(200).json(scheduledEmails);
+    } else {
+      return res.status(404).json({ error: 'User not found.' });
+    }
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ error: 'Error fetching scheduled emails.' });
+  }
+}
+
 module.exports = {
   getUsers,
   sendEmail,
-  readInbox
+  readInbox,
+  starEmail,
+  getStarredMail,
+  scheduleMail,
+  getScheduledMail
 };

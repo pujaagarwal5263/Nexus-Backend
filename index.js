@@ -2,11 +2,9 @@ const express = require('express');
 const bodyParser = require('body-parser'); // Require body-parser
 const app=express();
 app.use(bodyParser.json());
-//require('./db-connection')
+require('./db-connection')
 const router = require('./routes/router');
-const { configDotenv } = require('dotenv');
 app.use(router);
-configDotenv();
 
 // Nylas.accounts.list().then(accounts => {
 //     for (let account of accounts) {

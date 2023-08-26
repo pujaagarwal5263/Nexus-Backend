@@ -32,9 +32,25 @@ const draft = nylas.drafts.build({
     to: [{name:"Geek Puja",email:"puja@geekyants.com"}]
 })
 
-draft.send().then((msg)=>{
-    console.log(msg);
-})
+// draft.send().then((msg)=>{
+//     console.log(msg);
+// })
+
+nylas.messages.first({in: 'sent'}).then(message =>{
+    console.log(`Subject: ${message.subject} | ID: ${message.id} | Unread: ${message.unread}`);
+});
+
+// nylas.account.get().then(account =>{
+//     if (account.organizationUnit == 'label') {
+//         nylas.labels.list({}).then(labels => {
+//             console.log("This account contains the following labels:")
+//             for (const label of labels) {
+//               console.log(`Name: ${label.displayName} | ID: ${label.id}`);
+              
+//             }
+//           });
+//     }
+// });
 
 app.listen(8000,()=>{
     console.log("Server running at 8000");

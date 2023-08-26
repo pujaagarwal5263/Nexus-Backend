@@ -3,6 +3,6 @@ const router = express.Router();
 const controllers = require("../controllers/controller")
 
 router.get('/', controllers.getUsers);
-router.get('/:id', controllers.getUserById);
+router.post('/send_email', controllers.sendEmail);
 
 module.exports = router;

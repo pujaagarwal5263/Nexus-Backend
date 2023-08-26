@@ -5,7 +5,6 @@ const router = require('./routes/router');
 const { configDotenv } = require('dotenv');
 app.use(router);
 configDotenv();
-const { NylasCongif } = require('./nylas-config');
 
 // Nylas.accounts.list().then(accounts => {
 //     for (let account of accounts) {
@@ -31,10 +30,10 @@ const { NylasCongif } = require('./nylas-config');
 //     console.log(msg);
 // })
 
-const nylas = NylasCongif.with(process.env.ACCESS_TOKEN);
-nylas.messages.first({in: 'sent'}).then(message =>{
-    console.log(`Subject: ${message.subject} | ID: ${message.id} | Unread: ${message.unread}`);
-});
+// const nylas = NylasCongif.with(process.env.ACCESS_TOKEN);
+// nylas.messages.first({in: 'sent'}).then(message =>{
+//     console.log(`Subject: ${message.subject} | ID: ${message.id} | Unread: ${message.unread}`);
+// });
 
 // nylas.account.get().then(account =>{
 //     if (account.organizationUnit == 'label') {

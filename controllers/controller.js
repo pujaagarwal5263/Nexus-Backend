@@ -23,7 +23,7 @@ const getLabelForKey = value => {
       return key;
     }
   }
-  return value; // Return null if value is not found
+  return value; 
 };
 
 const getUsers = (req, res) => {
@@ -42,10 +42,7 @@ const sendEmail = async(req, res) => {
       to: recipient_array
     });
     await draft.send();
-    //read mail for sent box
-    // nylas.messages.first({in: 'sent'}).then(message =>{
-    //   console.log(`Subject: ${message.subject} | ID: ${message.id} | Unread: ${message.unread}`);
-    // });
+  
     return res.status(200).send("mail sent successfully");
   }catch(err){
     console.log(err);
@@ -71,7 +68,6 @@ const readInbox = async(req,res) => {
     }
 
     const messageData = {};
-    //console.log(labelArray);
     for (const label of labelArray) {
       const messages = await nylas.messages.list({ in: label, limit: 10 });
       const labelKey = getLabelForKey(label);
@@ -97,25 +93,20 @@ const readInbox = async(req,res) => {
 }
 
 const starEmail = async(req,res) => {
-  // post email's subject, id, recepient_array, snippet to mongo DB mapped with user's email
   const userEmail = req.body.email;
   const starredEmail = req.body.starredEmail;
   try {
-    // Check if the user already exists
     let user = await User.findOne({ email: userEmail });
 
     if (!user) {
-      // Create a new user if not found
       user = new User({
         email: userEmail,
         starredEmails: [starredEmail],
       });
     } else {
-      // Update existing user's starredEmails array
       user.starredEmails.push(starredEmail[0]);
     }
 
-    // Save the user (either newly created or updated)
     const savedUser = await user.save();
     return res.status(200).json(savedUser);
   } catch (error) {
@@ -125,11 +116,9 @@ const starEmail = async(req,res) => {
 }
 
 const getStarredMail = async(req,res) =>{
-  // take user's mail id in body and send corresponding starred email from mongo DB
   const userEmail = req.body.email;
 
   try {
-    // Find the user by email and retrieve their starredEmails
     const user = await User.findOne({ email: userEmail });
 
     if (user) {
@@ -148,25 +137,21 @@ const scheduleMail = async(req,res) => {
   const userEmail = req.body.email;
   const scheduledEmail = req.body.scheduledEmail;
   try {
-    // Check if the user already exists
     let user = await User.findOne({ email: userEmail });
 
     if (!user) {
-      // Create a new user if not found
       user = new User({
         email: userEmail,
         scheduledEmails: [scheduledEmail],
       });
     } else {
-      // Update existing user's starredEmails array
       user.scheduledEmails.push(scheduledEmail[0]);
     }
 
-    // Save the user (either newly created or updated)
     const savedUser = await user.save();
 
-    // deploy cron job to send mail at specified time
-    const schedulingTime =  scheduledEmail[0].scheduledAt;
+    const schedulingTime =  scheduledEmail[0].scheduledAt; 
+    // convert this schedulig time to '* * * * *' as per node-cron doc
     cron.schedule(schedulingTime, async () => {
       try {
         token = "t4qLPsX1c2KMCXpGMP3Qe6BVce0xBx";
@@ -178,7 +163,7 @@ const scheduleMail = async(req,res) => {
           to: scheduledEmail[0].recipient_array
         });
         await draft.send();
-
+        //once the send is successful try to delete from scheduled array
         console.log('Scheduled email sent:', scheduledEmail);
       } catch (error) {
         console.error('Error sending scheduled email:', error);
@@ -193,11 +178,9 @@ const scheduleMail = async(req,res) => {
 }
 
 const getScheduledMail = async(req,res) =>{
-  // take user's mail id in body and send corresponding starred email from mongo DB
   const userEmail = req.body.email;
 
   try {
-    // Find the user by email and retrieve their starredEmails
     const user = await User.findOne({ email: userEmail });
 
     if (user) {
